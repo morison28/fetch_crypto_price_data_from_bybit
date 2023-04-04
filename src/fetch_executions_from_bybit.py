@@ -10,15 +10,6 @@ from rich import print
 from tqdm import tqdm
 import urllib.request
 
-# 約定データ
-# 期間
-# ペア
-
-# ローソク
-# どの時間軸
-
-# argparser使う？
-# shell書く？
 
 BASE_URL = "https://public.bybit.com/trading/"
 DIR = "../data/bybit/executions/"
