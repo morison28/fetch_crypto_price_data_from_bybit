@@ -61,10 +61,14 @@ def fetch_executions_from_bybit(symbol:str, start_date:str, end_date:str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("symbol", type=str)
-    parser.add_argument("start_date", type=str)
-    parser.add_argument("end_date", type=str)
+    parser.add_argument("--symbol", type=str, required=True)
+    parser.add_argument("--start_date", type=str, required=True)
+    parser.add_argument("--end_date", type=str, required=True)
+    parser.add_argument("--save_dir", type=str, required=True)
     args = parser.parse_args()
+    save_dir = args.save_dir if args.save_dir[-1]=='/' else args.save_dir + '/'
+    if not os.path.isdir(save_dir):
+        os.mkdir(save_dir)
     fetch_executions_from_bybit(args.symbol, args.start_date, args.end_date)
 
 
