@@ -12,7 +12,6 @@ import urllib.request
 
 
 BASE_URL = "https://public.bybit.com/trading/"
-DIR = "../data/bybit/executions/"
 
 def download_url(url:str,zipfile_path:str):
     """ {url}先の約定データzipを{zipfile_path}に保存 """
@@ -32,7 +31,7 @@ def create_date_list(start_date:str,end_date:str) -> list:
     except:
         print('error: startdate or end_date out of month range')
 
-def fetch_executions_from_bybit(symbol:str, start_date:str, end_date:str):
+def fetch_executions_from_bybit(symbol:str, start_date:str, end_date:str, save_dir:str):
     """ bybit
     Parameters:
     ----------
@@ -41,17 +40,13 @@ def fetch_executions_from_bybit(symbol:str, start_date:str, end_date:str):
     Returns:
     ----------
     """
-    save_dir = f"../data/bybit/executions/{symbol}/"
-    if not symbol in os.listdir("../data/bybit/executions/"):
-        os.mkdir(save_dir)
-
     target_date_list = create_date_list(start_date, end_date)
     for date in tqdm(target_date_list):
         file_name = f"{symbol}{date}.pickle"
         file_path = f"{save_dir}{file_name}"
         zipfile_name = f"{symbol}{date}.csv.gz"
         if not file_name in os.listdir(save_dir):
-            download_url(f"https://public.bybit.com/trading/{symbol}/{zipfile_name}", zipfile_name)
+            download_url(f"{BASE_URL}{symbol}/{zipfile_name}", zipfile_name)
             pd.read_csv(zipfile_name).to_pickle(file_path)
             os.remove(zipfile_name)
         else:
@@ -69,7 +64,7 @@ if __name__ == "__main__":
     save_dir = args.save_dir if args.save_dir[-1]=='/' else args.save_dir + '/'
     if not os.path.isdir(save_dir):
         os.mkdir(save_dir)
-    fetch_executions_from_bybit(args.symbol, args.start_date, args.end_date)
+    fetch_executions_from_bybit(args.symbol, args.start_date, args.end_date, save_dir)
 
 
 
