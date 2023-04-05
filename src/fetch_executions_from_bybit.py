@@ -8,6 +8,7 @@ import gzip
 import pandas as pd
 from tqdm import tqdm
 import urllib.request
+from urllib.error import URLError, HTTPError
 
 
 BASE_URL = "https://public.bybit.com/trading/"
@@ -20,11 +21,29 @@ class InvalidDateRange(Exception):
     """ Raise when an invald date range is specified """
     pass
 
-def download_url(url:str,zipfile_path:str):
-    """ {url}先の約定データzipを{zipfile_path}に保存 """
-    with urllib.request.urlopen(url) as dl_file:
-        with open(zipfile_path, 'wb') as out_file:
-            out_file.write(dl_file.read())
+def download_url(url:str, zipfile_path:str):
+    """
+    Download a file from the specified URL and save it to the specified path.
+
+    Args:
+        url (str): The URL of the file to download.
+        zipfile_path (str): The path where the download file will be saved.
+
+    Raises:
+        URLError: If there is an error in the URL.
+        HTTPError: If there is an error in the HTTP request.
+        IOError: If there is an error in the I/O operation.
+    """
+    try:
+        with urllib.request.urlopen(url) as dl_file:
+            with open(zipfile_path, 'wb') as output_file:
+                output_file.write(dl_file.read())
+    except URLError as e:
+        raise URLError(f"Could not connect to {url}") from e
+    except HTTPError as e:
+        raise HTTPError(f"HTTP error occurred while connecting to {url}") from e
+    except IOError as e:
+        raise IOError(f"Could not write file to {zipfile_path}") from e
 
 def create_date_list(start_date:str,end_date:str) -> List[str]:
     """ 
