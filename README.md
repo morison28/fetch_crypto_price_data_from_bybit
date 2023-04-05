@@ -1,13 +1,14 @@
 ## fetch_crypto_data_from_bybit
-fetch and store cryptocurrency price data from bybit
+- bybitから各種約定データを取得し，pickleファイルに保存するスクリプト
+- ⚠ ローソク足は未リファクタリング(いつかやる)
+
+
 
 ### usage
-※ src/ 直下で実行
 #### fetch executions data
+こんな感じで使う
 ```
-python fetch_executions <symbol> <start_date> <end_date>
-ex)
-python generate_candles BTCUSD 2021-01-01 2021-01-07
+python3 fetch_executions_from_bybit.py --symbol BTCUSDT --start_date 2023-01-01 --end_date 2023-01-02 --save_dir save_dir/
 ```
 #### generate candle sticks
 ```
