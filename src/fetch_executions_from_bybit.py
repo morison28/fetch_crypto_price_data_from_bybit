@@ -1,17 +1,24 @@
 
 import argparse
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import os
-import sys
+from typing import List
 
 import gzip
 import pandas as pd
-from rich import print
 from tqdm import tqdm
 import urllib.request
 
 
 BASE_URL = "https://public.bybit.com/trading/"
+
+class InvalidDateFormat(Exception):
+    """ Raise when an invalid date format is specified """
+    pass
+
+class InvalidDateRange(Exception):
+    """ Raise when an invald date range is specified """
+    pass
 
 def download_url(url:str,zipfile_path:str):
     """ {url}先の約定データzipを{zipfile_path}に保存 """
@@ -19,26 +26,34 @@ def download_url(url:str,zipfile_path:str):
         with open(zipfile_path, 'wb') as out_file:
             out_file.write(dl_file.read())
 
-def create_date_list(start_date:str,end_date:str) -> list:
-    """ 文字列型の日付リストを作成 """
-    # TODO: 存在しない日付を入力してもエラーで止まらない様にする
-    try:
-        datetime_format = '%Y-%m-%d'
-        start = datetime.strptime(start_date, datetime_format)
-        end = datetime.strptime(end_date, datetime_format)
-        period = (end - start).days
-        return [datetime.strftime(start+timedelta(i),datetime_format) for i in range(period+1)]
-    except:
-        print('error: startdate or end_date out of month range')
+def create_date_list(start_date:str,end_date:str) -> List[str]:
+    """ 
+    Create a list of dates in string format.
 
-def fetch_executions_from_bybit(symbol:str, start_date:str, end_date:str, save_dir:str):
-    """ bybit
-    Parameters:
-    ----------
-    symbol:
+    Args:
+        start_date (str): Start date in the format "YYYY-MM-DD"
+        end_date (str): End date in the format "YYYY-MM-DD"
 
     Returns:
-    ----------
+        A list of dates between start_date adn end_date (inclusive).
+    """
+    datetime_format = '%Y-%m-%d'
+    try:
+        start = datetime.strptime(start_date, datetime_format)
+        end = datetime.strptime(end_date, datetime_format)
+    except ValueError:
+        InvalidDateFormat('Invalid date format. Use "YYYY-MM-DD"')
+    if start > datetime.now() or end > datetime.now():
+        raise InvalidDateRange('Invalid date range. Cannot specify a future date.')
+    if start > end:
+        raise InvalidDateRange('Start date is later than end date')
+    delta = end - start
+    date_list = [datetime.strftime(start + timedelta(i), datetime_format) for i in range(delta.days+1)]
+    return date_list
+
+def fetch_executions_from_bybit(symbol:str, start_date:str, end_date:str, save_dir:str):
+    """
+    
     """
     target_date_list = create_date_list(start_date, end_date)
     for date in tqdm(target_date_list):
@@ -65,10 +80,3 @@ if __name__ == "__main__":
     if not os.path.isdir(save_dir):
         os.mkdir(save_dir)
     fetch_executions_from_bybit(args.symbol, args.start_date, args.end_date, save_dir)
-
-
-
-
-
-
-
